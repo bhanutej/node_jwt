@@ -1,0 +1,16 @@
+require "csv"
+csv_files = ["Registration_20180401-10.csv", "Registration_20180411-20.csv", "Registration_20180420-25.csv", "Registration_20180426.csv", "Registration_20180427.csv", "Registration_20180428.csv", "Registration_20180429.csv", "Registration_20180430.csv"]
+aprilfile = "/Users/bhanutejk/Desktop/uapril/april.csv"
+CSV.open(aprilfile,'w') do |csv|
+    csv << ["REGISTERED DATE(GMT)","REGISTERED DATE(IST)","TRANSACTION STATUS","EMAIL VERIFIED","MOBILE VERIFIED","VERIEFIED","REGION","COUNTRY","STATE","USER_ID","REG TYPE","EMAILID","MOBILE","ZEE5 ID/COMMON IDENTIFIER","APPSFLYERID","PLATFORM","OPERATOR","INTERNET_NETWORK","ISP_NAME","BROWSER","DEVICE_TYPE","DEVICE_OS","DEVICE_BRAND","DEVICE_MODEL","SUBSCRIPTIONSOURCE"]
+    csv_files.each do |csv_file|
+        filename = "/Users/bhanutejk/Desktop/uapril/#{csv_file}"
+        csv_text = File.read(filename)
+        ncsv = CSV.parse(csv_text, :headers => true)
+        
+        ncsv.each do |row|
+            puts row["REGISTERED DATE(GMT)"]
+            csv << [row["REGISTERED DATE(GMT)"],row["REGISTERED DATE(IST)"],row["TRANSACTION STATUS"],row["EMAIL VERIFIED"],row["MOBILE VERIFIED"],row["VERIEFIED"],row["REGION"],row["COUNTRY"],row["STATE"],row["USER_ID"],row["REG TYPE"],row["EMAILID"],row["MOBILE"],row["ZEE5 ID/COMMON IDENTIFIER"],row["APPSFLYERID"],row["PLATFORM"],row["OPERATOR"],row["INTERNET_NETWORK"],row["ISP_NAME"],row["BROWSER"],row["DEVICE_TYPE"],row["DEVICE_OS"],row["DEVICE_BRAND"],row["DEVICE_MODEL"],row["SUBSCRIPTIONSOURCE"]]
+        end
+    end
+end

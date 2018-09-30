@@ -1,0 +1,282 @@
+csv_files = ["Registration_20180501.csv", "Registration_20180502.csv", "Registration_20180503.csv", "Registration_20180504.csv", "Registration_20180505.csv", "Registration_20180506.csv", "Registration_20180507.csv", "Registration_20180508.csv", "Registration_20180509.csv", "Registration_20180510.csv", "Registration_20180511.csv", "Registration_20180512.csv", "Registration_20180513.csv", "Registration_20180514.csv", "Registration_20180515.csv", "Registration_20180516.csv", "Registration_20180517.csv", "Registration_20180518.csv", "Registration_20180519.csv", "Registration_20180520.csv", "Registration_20180521.csv", "Registration_20180522.csv", "Registration_20180523.csv", "Registration_20180524.csv", "Registration_20180525.csv", "Registration_20180526.csv", "Registration_20180527.csv", "Registration_20180528.csv", "Registration_20180529.csv", "Registration_20180530.csv", "Registration_20180531.csv"]
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>Exception>>>Mysql2::Error: Data too long for column 'USER_ID' at row 1: INSERT INTO `Registration_data` (`REGISTERED DATE(GMT)`, `REGISTERED DATE(IST)`, `TRANSACTION STATUS`, `EMAIL VERIFIED`, `MOBILE VERIFIED`, `VERIEFIED`, `REGION`, `COUNTRY`, `STATE`, `USER_ID`, `REG TYPE`, `EMAILID`, `MOBILE`, `ZEE5 ID/COMMON IDENTIFIER`, `APPSFLYERID`, `PLATFORM`, `OPERATOR`, `INTERNET_NETWORK`, `ISP_NAME`, `BROWSER`, `DEVICE_TYPE`, `DEVICE_OS`, `DEVICE_BRAND`, `DEVICE_MODEL`, `SUBSCRIPTIONSOURCE`) VALUES ('2018-04-22 06:28:29', '2018-04-22 11:58:29', '', 'false', 'false', 'false', 'India', 'IN', '', '                                                                              jagatparekh123@gmail.com ', 'Email', '                                                                              jagatparekh123@gmail.com ', '', '43C9408F-B44B-4B4F-8B3E-0AEBC35346FB', '', 'Z5', '', '', '', '', '', '', '', '', '')>>>>>>>>>>>>>43C9408F-B44B-4B4F-8B3E-0AEBC35346FB>>>>>>>>/home/ubuntu/reports/april.csv>>>>>
+
+
+  def ftp_pull
+  	@ftp = Net::FTP.new('14.142.188.66', 'CRMdashboard', 'crdsbd@)@!*')
+		@ftp.passive = true
+		folder_path = Date.today.strftime("%B")
+		(@ftp.mkdir(folder_path) unless (@ftp.nlst.include?(folder_path))
+		@ftp.chdir(folder_path))
+		@ftp.mkdir("UserReports") unless (@ftp.nlst.include?("UserReports"))
+		@ftp.chdir("UserReports")
+		file_path = "/home/ubuntu/ftp_files/#{file_date}.csv"
+		@ftp.putbinaryfile("#{file_path}")
+  end
+
+ftp = Net::FTP::new("ftp_server_site")
+ftp.login("user", "pwd")
+folder_path = "#{Date.today.strftime("%B")}/UserReports"
+filedate = "#{Date.today.prev_day.strftime("%Y")+Date.today.prev_day.strftime("%m")+Date.today.prev_day.strftime("%d")}"
+ftp.chdir("folder_path)
+filename = "Registration_#{filedate}.csv"
+file_path = "/home/ubuntu/ftp_files/#{filename}"
+ftp.getbinaryfile(filename, file_path)
+
+Net::FTP.open('14.142.188.66', 'CRMdashboard', 'crdsbd@)@!*') do |ftp|
+  files = ftp.chdir(DIRECTORY)
+  ftp.nlst('hd-*.jpg').each do |file_name|
+     ftp.getbinaryfile(file_name, destination)
+  end
+end
+
+
+
+filename = "/home/ubuntu/reports/july_sub_01-24.csv"
+CSV.open(filename,'w') do |csv|
+csv << ["Transaction Date(GMT)","Transaction Date(IST)","TRANSACTION STATUS","REGION","COUNTRY","STATE","USER_ID","EMAIL","MOBILE","REG TYPE","COMMON IDENTIFIER","APPSFLYER ID","SUBSCRIPTION  SOURCE","TYPE OF USER","PAYMENT_MODE","PAYMENT_SUB MODE","PAYMENT_SUB SUB MODE","AUTO RENEW ON","PLATFORM","OPERATOR","INTERNET_NETWORK","ISP_NAME","BROWSER","DEVICE_TYPE","DEVICE_OS","DEVICE_BRAND","DEVICE_MODEL","PACKAGE_NAME","PACKAGE_ID","PACK_CURRENCY","TRANSACTION_CURRENCY","PACK_VALIDITY_TI(IST)","PACK_PRICE (before discount)","PRICE_CHARGED","SUBSCRIPTION_TYPE","PROMO_CODE","PREPAID CARD CODE","INVOICE NUMBER/ID","TRANSACTION_ID (assigned by ZEE5)","TRANSACTION_ID (same as the payment gateway)","Subscriber Type","REPEAT USER","SUBSCRIPTION COUNT"]
+Subscription.where(:SubscriptionStart => ('2018-06-30 18:30:00' .. '2018-07-24 18:30:00')).each do |subs|
+user_id = subs.UserId
+user = User.find_by_Id(user_id)
+unless user.nil?
+com_id = user.Id
+add_mob = user.Mobile
+add_email = user.Email
+name = user.Mobile
+if !name.nil?
+@reg_type = "Mobile"
+verified = user.IsMobileConfirmed
+fb_mob = user.FacebookUserId
+gp_mob = user.GoogleUserId
+end
+if name.nil? or name == ""
+name = user.FacebookUserId
+if !name.nil?
+@reg_type = "Facebook"
+verified = "true"
+end
+end
+if name.nil? or name == ""
+name = user.GoogleUserId
+if !name.nil?
+@reg_type = "Google+"
+verified = "true"
+end
+end
+if name.nil? or name == ""
+name = user.TwitterUserId
+if !name.nil?
+@reg_type = "Twitter"
+verified = "true"
+end
+end
+if name.nil? or name == ""
+name = user.Email
+@reg_type = "Email"
+verified = user.IsEmailConfirmed
+end
+end
+subs_id = subs.Id
+sub_packs = ["0-11-svodsubscr_831318298","0-11-svodsubsc_1953218117","0-11-svodsubscr_927634289","0-11-svodsubsc_2049534108"]
+payments = Payment.where(:SubscriptionId => subs_id)
+count_for_user = []
+unless user.nil?
+subs_count = Subscription.where(:UserId => user.Id).select{|s_count| s_count.SubscriptionStart != nil}
+subs_count.each do |s_count|
+subs_plan_id = s_count.SubscriptionPlanId
+if sub_packs.include?subs_plan_id
+count_for_user << subs_count
+end
+end
+subs_count = count_for_user.count
+if subs_count > 1
+rep_user = "Repeat"
+else
+rep_user = "New"
+end
+end
+if !payments.empty?
+payments = payments.select {|pay| pay.Date.getlocal.to_s.split("+").first.strip.split(" ").first == subs.SubscriptionStart.getlocal.to_s.split("+").first.strip.split(" ").first unless pay.Date.nil? }
+payment = payments[0]
+else
+payment = nil
+end
+unless payment.nil?
+pay_mode = payment.Description
+pay_mode = pay_mode.split(" ").first
+if pay_mode == "Fortumo"
+operator = payment.Description.split(":")[1].split(".").first.chomp
+else
+operator = "NA"
+end
+if pay_mode == "Paytm"
+iden = "#{payment.Identifier.inspect.to_s}"
+else
+iden = payment.Identifier
+end
+amount = payment.Amount
+else
+operator = ""
+pay_mode = ""
+iden = ""
+amount = ""
+end
+s_date = subs.SubscriptionStart
+s_date = s_date.getlocal.to_s.split("+").first.strip
+start_date = s_date
+ist_time = subs.SubscriptionStart
+ist_time = ist_time.getlocal + 5.hours + 30.minutes
+ist_time = ist_time.to_s.split("+").first.strip
+end_date = subs.SubscriptionEnd
+pack_cur = "INR"
+reg = "India"
+country = "IN"
+pack_id = subs.SubscriptionPlanId
+pack_name = `sqlcmd -S z5.database.windows.net -U shailendra -P 9sAZeESjYN7tLXD -d z5-cms -Q "set nocount on; SELECT Title FROM dbo.SubscriptionPlan where ExternalId = '#{pack_id}'" -h-1 -W`
+auto_renew = subs.RecurringEnabled
+zee_trans_id = subs.Id
+sub_type = subs.FreeTrial
+if sub_type == 0
+subs_type = "No Free Trail"
+else
+subs_type = "Free Trail"
+end
+user_type = "ZEE5"
+csv << ["#{start_date}","#{ist_time}","","#{reg}","#{country}","","#{name}","#{add_email}","#{add_mob}","#{@reg_type}","#{com_id}","","","ZEE5","#{pay_mode}","","","#{auto_renew}","","#{operator}","","","","","","","","#{pack_name}","#{pack_id}","INR","INR","#{end_date}","","#{amount}","#{subs_type}","","","","#{zee_trans_id}","#{iden}","","#{rep_user}","#{subs_count}"]
+end
+end
+
+
+
+filename = "/home/ubuntu/reports/july_sub_01-24.csv"
+CSV.open(filename,'w') do |csv|
+	csv << ["Transaction Date(GMT)","Transaction Date(IST)","TRANSACTION STATUS","REGION","COUNTRY","STATE","USER_ID","EMAIL","MOBILE","REG TYPE","COMMON IDENTIFIER","APPSFLYER ID","SUBSCRIPTION  SOURCE","TYPE OF USER","PAYMENT_MODE","PAYMENT_SUB MODE","PAYMENT_SUB SUB MODE","AUTO RENEW ON","PLATFORM","OPERATOR","INTERNET_NETWORK","ISP_NAME","BROWSER","DEVICE_TYPE","DEVICE_OS","DEVICE_BRAND","DEVICE_MODEL","PACKAGE_NAME","PACKAGE_ID","PACK_CURRENCY","TRANSACTION_CURRENCY","PACK_VALIDITY_TI(IST)","PACK_PRICE (before discount)","PRICE_CHARGED","SUBSCRIPTION_TYPE","PROMO_CODE","PREPAID CARD CODE","INVOICE NUMBER/ID","TRANSACTION_ID (assigned by ZEE5)","TRANSACTION_ID (same as the payment gateway)","Subscriber Type","REPEAT USER","SUBSCRIPTION COUNT"]
+	Subscription.where(:SubscriptionStart => ('2018-06-30 18:30:00' .. '2018-07-24 18:30:00')).each do |subs|
+	  user_id = subs.UserId
+  	user = User.find_by_Id(user_id)
+		unless user.nil?
+			com_id = user.Id
+			add_mob = user.Mobile
+			add_email = user.Email
+			name = user.Mobile
+      if !name.nil?
+        @reg_type = "Mobile"
+        verified = user.IsMobileConfirmed
+        fb_mob = user.FacebookUserId
+        gp_mob = user.GoogleUserId
+      end
+			if name.nil? or name == ""
+      	name = user.FacebookUserId
+				if !name.nil?
+					@reg_type = "Facebook"
+					verified = "true"
+				end
+     	end
+			if name.nil? or name == ""
+				name = user.GoogleUserId
+				if !name.nil?
+					@reg_type = "Google+"
+					verified = "true"
+				end
+			end
+			if name.nil? or name == ""
+				name = user.TwitterUserId
+				if !name.nil?
+					@reg_type = "Twitter"
+					verified = "true"
+				end
+			end
+		  if name.nil? or name == ""
+      	name = user.Email
+       	@reg_type = "Email"
+       	verified = user.IsEmailConfirmed
+     	end
+		end
+   	subs_id = subs.Id
+   	sub_packs = ["0-11-svodsubscr_831318298","0-11-svodsubsc_1953218117","0-11-svodsubscr_927634289","0-11-svodsubsc_2049534108"]
+   	payments = Payment.where(:SubscriptionId => subs_id)
+   	count_for_user = []
+    unless user.nil?
+   		subs_count = Subscription.where(:UserId => user.Id).select{|s_count| s_count.SubscriptionStart != nil}
+	    subs_count.each do |s_count|
+   			subs_plan_id = s_count.SubscriptionPlanId
+   			if sub_packs.include?subs_plan_id
+     			count_for_user << subs_count
+   			end
+  		end
+			subs_count = count_for_user.count
+	   	if subs_count > 1
+     		rep_user = "Repeat"
+   		else
+     		rep_user = "New"
+   		end
+  	end
+		if !payments.empty?
+			payments = payments.select {|pay| pay.Date.getlocal.to_s.split("+").first.strip.split(" ").first == subs.SubscriptionStart.getlocal.to_s.split("+").first.strip.split(" ").first unless pay.Date.nil? }
+			payment = payments[0]
+		else
+			payment = nil
+		end
+
+    unless payment.nil?
+    	pay_mode = payment.Description
+    	pay_mode = pay_mode.split(" ").first
+    	if pay_mode == "Fortumo"
+     		operator = payment.Description.split(":")[1].split(".").first.chomp
+    	else
+     		operator = "NA"
+    	end
+    	if pay_mode == "Paytm"
+      	iden = "#{payment.Identifier.inspect.to_s}"
+    	else
+      	iden = payment.Identifier
+    	end
+    	amount = payment.Amount
+   	else
+    	operator = ""
+    	pay_mode = ""
+    	iden = ""
+    	amount = ""
+   	end
+		s_date = subs.SubscriptionStart
+   	s_date = s_date.getlocal.to_s.split("+").first.strip
+		start_date = s_date
+		ist_time = subs.SubscriptionStart
+		ist_time = ist_time.getlocal + 5.hours + 30.minutes
+		ist_time = ist_time.to_s.split("+").first.strip
+		end_date = subs.SubscriptionEnd
+		pack_cur = "INR"
+		reg = "India"
+		country = "IN"
+		pack_id = subs.SubscriptionPlanId
+		pack_name = get_pack_name pack_id
+		auto_renew = subs.RecurringEnabled
+		zee_trans_id = subs.Id
+		sub_type = subs.FreeTrial
+		if sub_type == 0
+    	subs_type = "No Free Trail"
+   	else
+     	subs_type = "Free Trail"
+   	end
+   	user_type = "ZEE5"
+  	csv << ["#{start_date}","#{ist_time}","","#{reg}","#{country}","","#{name}","#{add_email}","#{add_mob}","#{@reg_type}","#{com_id}","","","ZEE5","#{pay_mode}","","","#{auto_renew}","","#{operator}","","","","","","","","#{pack_name}","#{pack_id}","INR","INR","#{end_date}","","#{amount}","#{subs_type}","","","","#{zee_trans_id}","#{iden}","","#{rep_user}","#{subs_count}"]
+	end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
